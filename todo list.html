@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>To-Do List App</title>
+  <style>
+    :root {
+      --bg: #121212;
+      --text: #fff;
+      --card: #222;
+      --accent: #00ffcc;
+      --task-bg: #333;
+      --button-text: #000;
+      --delete-btn: crimson;
+    }
+    body.light {
+      --bg: #f0f0f0;
+      --text: #000;
+      --card: #fff;
+      --accent: #007777;
+      --task-bg: #ddd;
+      --button-text: #fff;
+      --delete-btn: #d00;
+    }
+    body {
+      margin: 0; padding: 20px;
+      font-family: sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: background .3s, color .3s;
+    }
+    .nav {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 20px;
+    }
+    .nav h1 {
+      margin: 0; font-size: 2rem; color: var(--accent);
+    }
+    .settings {
+      position: relative;
+    }
+    .settings button {
+      background: var(--accent);
+      color: var(--button-text);
+      border: none;
+      padding: 8px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .menu {
+      position: absolute;
+      top: 45px; right: 0;
+      background: var(--card);
+      border: 1px solid #444;
+      border-radius: 6px;
+      display: none;
+      flex-direction: column;
+      width: 180px;
+      z-index: 1;
+    }
+    .menu .label {
+      padding: 10px 15px;
+      font-weight: bold;
+      color: var(--accent);
+    }
+    .menu button {
+      background: none;
+      border: none;
+      color: var(--text);
+      text-align: left;
+      padding: 10px 15px;
+      cursor: pointer;
+    }
+    .menu button:hover {
+      background: var(--task-bg);
+    }
+    .inputs {
+      margin-bottom: 20px;
+    }
+    .inputs input {
+      padding: 10px;
+      width: 200px;
+      border: none;
+      border-radius: 6px;
+      margin-right: 5px;
+    }
+    .inputs .add-category {
+      background: var(--accent);
+      color: var(--button-text);
+      border: none;
+      padding: 10px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .category {
+      background: var(--card);
+      padding: 20px;
+      border-radius: 10px;
+      width: 280px;
+    }
+    .category-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 10px;
+    }
+    .category-header h2 {
+      margin: 0; font-size: 1.2rem; color: var(--accent);
+    }
+    .delete-category {
+      background: var(--delete-btn);
+      color: #fff;
+      border: none;
+      padding: 5px 8px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .task-input {
+      display: flex; gap: 10px; margin-bottom: 10px;
+    }
+    .task-input input {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      border-radius: 5px;
+    }
+    .task-input button {
+      background: var(--accent);
+      color: var(--button-text);
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .task {
+      background: var(--task-bg);
+      border-radius: 6px;
+      padding: 10px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .task span {
+      flex: 1;
+    }
+    .task.completed span {
+      text-decoration: line-through;
+      opacity: 0.6;
+    }
+    .task input[type="checkbox"] {
+      width: 16px; height: 16px;
+      cursor: pointer;
+    }
+    .task button {
+      background: var(--delete-btn);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 5px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    @media (max-width: 600px) {
+      .container { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="nav">
+    <h1 id="title">📋 To-Do Categories</h1>
+    <div class="settings">
+      <button onclick="toggleMenu()">⚙️ Settings</button>
+      <div class="menu" id="settingsMenu">
+        <div class="label">🎨 Theme</div>
+        <button onclick="setTheme('light')">🌞 Light</button>
+        <button onclick="setTheme('dark')">🌙 Dark</button>
+        <div class="label">🌐 Language</div>
+        <button onclick="setLanguage('en')">🇬🇧 English</button>
+        <button onclick="setLanguage('ar')">🇸🇦 العربية</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="inputs">
+    <input id="categoryName" placeholder="New category name">
+    <button class="add-category" onclick="addCategory()">Add Category</button>
+  </div>
+
+  <div class="container" id="categories"></div>
+
+  <script>
+    const labels = {
+      en: {
+        title: "📋 To-Do Categories",
+        addCategory: "Add Category",
+        categoryPlaceholder: "New category name",
+        taskPlaceholder: "New task...",
+        addTask: "Add Task",
+        deleteTask: "Delete",
+        deleteCategory: "🗑️"
+      },
+      ar: {
+        title: "📋 الفئات",
+        addCategory: "أضف فئة",
+        categoryPlaceholder: "اسم الفئة الجديدة",
+        taskPlaceholder: "مهمة جديدة...",
+        addTask: "أضف المهمة",
+        deleteTask: "حذف",
+        deleteCategory: "🗑️"
+      }
+    };
+
+    let currentLang = 'en';
+
+    function toggleMenu() {
+      const menu = document.getElementById('settingsMenu');
+      menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    function setTheme(mode) {
+      document.body.classList.toggle('light', mode === 'light');
+      document.getElementById('settingsMenu').style.display = 'none';
+    }
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      const t = labels[lang];
+      document.getElementById('title').textContent = t.title;
+      document.querySelector('.add-category').textContent = t.addCategory;
+      document.getElementById('categoryName').placeholder = t.categoryPlaceholder;
+      document.getElementById('settingsMenu').style.display = 'none';
+    }
+
+    function addCategory() {
+      const name = document.getElementById('categoryName').value.trim();
+      if (!name) return;
+      const t = labels[currentLang];
+      const container = document.getElementById('categories');
+      const box = document.createElement('div');
+      box.className = 'category';
+      box.innerHTML = `
+        <div class="category-header">
+          <h2>${name}</h2>
+          <button class="delete-category" onclick="deleteCategory(this)">${t.deleteCategory}</button>
+        </div>
+        <div class="task-input">
+          <input placeholder="${t.taskPlaceholder}">
+          <button onclick="addTask(this)">${t.addTask}</button>
+        </div>
+        <div class="tasks"></div>
+      `;
+      container.appendChild(box);
+      document.getElementById('categoryName').value = '';
+    }
+
+    function deleteCategory(btn) {
+      btn.closest('.category').remove();
+    }
+
+    function addTask(btn) {
+      const t = labels[currentLang];
+      const input = btn.parentElement.querySelector('input');
+      const text = input.value.trim();
+      if (!text) return;
+      const taskEl = document.createElement('div');
+      taskEl.className = 'task';
+      taskEl.innerHTML = `
+        <span>${text}</span>
+        <button onclick="deleteTask(this)">${t.deleteTask}</button>
+        <input type="checkbox" onchange="toggleComplete(this)">
+      `;
+      btn.closest('.category').querySelector('.tasks').appendChild(taskEl);
+      input.value = '';
+    }
+
+    function toggleComplete(chk) {
+      chk.parentElement.classList.toggle('completed', chk.checked);
+    }
+
+    function deleteTask(btn) {
+      btn.closest('.task').remove();
+    }
+
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.settings')) {
+        document.getElementById('settingsMenu').style.display = 'none';
+      }
+    });
+  </script>
+
+</body>
+</html>
